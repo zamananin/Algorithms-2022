@@ -2,6 +2,11 @@
 
 package lesson1
 
+import java.io.File
+import java.lang.Exception
+import java.util.*
+import kotlin.math.absoluteValue
+
 /**
  * Сортировка времён
  *
@@ -97,8 +102,42 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 121.3
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    TODO()
+
+    fun myTemp(s: String): Int {
+        val separated = s.split(".")
+        if (separated.size != 2) {
+            throw Exception("Incorrect data format")
+        }
+        return if (separated[0][0] == '-') 10 * separated[0].toInt() - separated[1].toInt()
+        else 10 * separated[0].toInt() + separated[1].toInt()
+    }
+
+    val list = LinkedList<Int>() // Трудоемкость добавления в конец LinkedList равна O(1)
+    for (line in File(inputName).readLines()) {
+        list.add(myTemp(line))
+        // Трудоемкость преобразования строки в число O(1), т.к. в диапазоне от -273.0 до +500.0. все строки ограниченной длинны
+    }
+    // Трудоемкость данного цикла O(n)
+
+    val array = list.toIntArray()
+    // Трудоемкость O(n)
+    quickSort(array)
+    // Трудоемкость O(n * log n)
+    // Ресурсоемкость O(n * log n)
+
+    File(outputName).bufferedWriter().use {
+        for (el in array) {
+            if (el < 0) it.write("-")
+            it.write(((el / 10).absoluteValue).toString())
+            it.write(".")
+            it.write(((el % 10).absoluteValue).toString())
+            it.newLine()
+        }
+    }
+    //Трудоемкость O(n)
 }
+// В итоге трудоемкость составляет O(n * log n)
+// Ресурсоемкость O(n * log n)
 
 /**
  * Сортировка последовательности
@@ -147,7 +186,37 @@ fun sortSequence(inputName: String, outputName: String) {
  *
  * Результат: second = [1 3 4 9 9 13 15 20 23 28]
  */
+
 fun <T : Comparable<T>> mergeArrays(first: Array<T>, second: Array<T?>) {
-    TODO()
+    var firstPointer = 0
+    var secondPointer = first.size
+    var commonPointer = 0
+    /**
+     * first  = [4 9 15 20 28]
+     *           ^ fP
+     * second = [null null null null null 1 3 9 13 18 23]
+     *           ^ cP                     ^ sP
+     */
+    while (commonPointer < second.size && second[commonPointer] == null) {
+        /**
+         *  убедились, что:
+         *  1. common pointer в порядке (мб не в порядке, если раньше было second = [ ... ... ... null])
+         *  2. есть еще элементы null <==> first не закончился
+         */
+        if (secondPointer < second.size && first[firstPointer] >= second[secondPointer]!!) {
+            // выполнить если еще есть second и элемент из second меньше
+            val t = second[secondPointer]
+            second[secondPointer] = null
+            second[commonPointer] = t
+            secondPointer++
+        } else {
+            second[commonPointer] = first[firstPointer]
+            firstPointer++
+
+        }
+        commonPointer++
+    }
+    // В худшем случае second.size итераций => O(second.size) (линейная сложность)
+    // Ресурсоемкость O(1)
 }
 
