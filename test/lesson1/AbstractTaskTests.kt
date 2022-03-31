@@ -138,7 +138,7 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         }
         try {
             sortTemperatures("input/temp_in2.txt", "temp.txt")
-            assertFileContent("temp.txt", "0.0")
+            assertFileContent("temp.txt", "-273.0\n0.0\n500.0")
         } finally {
             File("temp.txt").delete()
         }

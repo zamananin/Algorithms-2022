@@ -46,6 +46,11 @@ abstract class AbstractAlgorithmsTests {
         assertEquals(3 to 4, optimizeBuyAndSell("input/buysell_in1.txt"))
         assertEquals(8 to 12, optimizeBuyAndSell("input/buysell_in2.txt"))
         assertEquals(3 to 4, optimizeBuyAndSell("input/buysell_in3.txt"))
+        assertEquals(5 to 6, optimizeBuyAndSell("input/buysell_in4.txt"))
+        // проверка при ответе в последних строках
+        assertEquals(0 to 0, optimizeBuyAndSell("input/buysell_in5.txt"))
+        // проверка массива с нулевой возможной прибылью. В задании ничего не сказано об этом,
+
         try {
             val expectedAnswer = generatePrices(1000)
             assertEquals(expectedAnswer, optimizeBuyAndSell("temp_prices.txt"))
@@ -120,6 +125,9 @@ abstract class AbstractAlgorithmsTests {
                 File("input/ruslan_ludmila_2.txt").readText()
             ).trim()
         )
+        assertEquals("Бим", lesson2.longestCommonSubstring("Бим не Бом", "Бом это Бим"))
+        assertEquals("Бим", lesson2.longestCommonSubstring("БимТеперьБом", "Бим, Бом и слон"))
+        // Проверка при нескольких совпаденях
     }
 
     fun calcPrimesNumber(calcPrimesNumber: (Int) -> Int) {

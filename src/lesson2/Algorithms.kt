@@ -2,6 +2,8 @@
 
 package lesson2
 
+import java.io.File
+
 /**
  * Получение наибольшей прибыли (она же -- поиск максимального подмассива)
  * Простая
@@ -27,8 +29,48 @@ package lesson2
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
 fun optimizeBuyAndSell(inputName: String): Pair<Int, Int> {
-    TODO()
+    val prices = mutableListOf<Int>()
+    for (line in File(inputName).readLines()) {
+        val number = line.toInt()
+        if (number <= 0) throw NumberFormatException()
+        prices.add(number)
+    }
+    if (prices.size == 0) throw NumberFormatException()
+    val data = mutableListOf<Int>()
+    // массив изменений цен
+    for (i in 0 until (prices.size - 1)) {
+        data.add(prices[i + 1] - prices[i])
+    }
+    // рекурсивное решение
+    var maxBuy = 0
+    var maxSell = 0
+    var maxValue = 0
+    var secondBuy = 0
+    var secondValue = 0
+    // secondBuy - день покупки, если день проажи - последний
+    for (lastDay in 1 until (prices.size)) {
+        val d = data[lastDay - 1]
+        val p = secondValue + d
+        if (p >= 0) secondValue = p
+        else {
+            secondBuy = lastDay
+            secondValue = 0
+        }
+        if (maxValue < secondValue) {
+            maxBuy = secondBuy
+            maxSell = lastDay
+            maxValue = secondValue
+        }
+    }
+    return if (maxValue == 0) 0 to 0
+    // В задании ничего не сказано о случае нулевой возможной прибыли.
+    // Максимальная прибыль равна нулю при купле-продаже в один день (нулю), либо в дни,
+    // между которыми цена не менялась. Принято решение возвращать в этом случае  0 to 0
+    else maxBuy + 1 to maxSell + 1
+    // В ответе строки файла нумеруются с 1
 }
+// Ресурсоемкость O(n)
+// Трудоемкость O(n)
 
 /**
  * Задача Иосифа Флафия.
@@ -95,7 +137,38 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  * вернуть ту из них, которая встречается раньше в строке first.
  */
 fun longestCommonSubstring(first: String, second: String): String {
-    TODO()
+    // Решение задачи с помощью динамического программирования.
+    //   A B C D
+    // A 1 0 0 0
+    // C 0 0 1 0
+    // D 0 0 0 2
+    // B 0 1 0 0
+    // Для эффективной ресурсоемкости храниться будут только значимые значения таблицы.
+    // чтобы раньше встретилась та подстрока, которая раньше в first,
+    // внешний перебор будет по строке first, а внутренний по second.
+    val data = mutableMapOf<Int, Int>()
+    // keys - индекс буквы в слове second
+    // values - значение ячейки таблицы
+    // ресурсоемкость в худшем случае O(second.length), O(n)
+    var longestEndingIndex: Int? = null
+    var longestLength = 0
+    for (i in first.indices) {
+        for (j in second.indices.reversed()) {
+            if (first[i] == second[j]) { // буквы одинакоые?
+                data[j] = (data[j - 1] ?: 0) + 1
+                // значение "слева сверху" + 1
+                if (data[j]!! > longestLength) {
+                    longestEndingIndex = j
+                    longestLength = data[j]!!
+                }
+            }
+            data.remove(j - 1)
+            // причина, по которой reversed()
+        }
+    }
+    // трудоемкость O(first.length * second.length), O(n * n)
+    return if (longestLength == 0) ""
+    else second.substring(longestEndingIndex!! - longestLength + 1, longestEndingIndex + 1)
 }
 
 /**

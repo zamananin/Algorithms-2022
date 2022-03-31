@@ -102,14 +102,16 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 121.3
  */
 fun sortTemperatures(inputName: String, outputName: String) {
+    val tNegative = 2730
+    val tLimit = 7730
 
     fun myTemp(s: String): Int {
         val separated = s.split(".")
         if (separated.size != 2) {
             throw Exception("Incorrect data format")
         }
-        return if (separated[0][0] == '-') 10 * separated[0].toInt() - separated[1].toInt()
-        else 10 * separated[0].toInt() + separated[1].toInt()
+        return if (separated[0][0] == '-') 10 * separated[0].toInt() - separated[1].toInt() + tNegative
+        else 10 * separated[0].toInt() + separated[1].toInt() + tNegative
     }
 
     val list = LinkedList<Int>() // Трудоемкость добавления в конец LinkedList равна O(1)
@@ -121,23 +123,27 @@ fun sortTemperatures(inputName: String, outputName: String) {
 
     val array = list.toIntArray()
     // Трудоемкость O(n)
-    quickSort(array)
+    // quickSort(array)
     // Трудоемкость O(n * log n)
     // Ресурсоемкость O(n * log n)
+    val sortedArray = countingSort(array, tLimit)
+    // Трудоемкость O(tLimit)
+    // Ресурсоемкость O(tLimit)
 
     File(outputName).bufferedWriter().use {
-        for (el in array) {
-            if (el < 0) it.write("-")
-            it.write(((el / 10).absoluteValue).toString())
+        for (el in sortedArray) {
+            val t = el - tNegative
+            if (t < 0) it.write("-")
+            it.write(((t / 10).absoluteValue).toString())
             it.write(".")
-            it.write(((el % 10).absoluteValue).toString())
+            it.write(((t % 10).absoluteValue).toString())
             it.newLine()
         }
     }
     //Трудоемкость O(n)
 }
-// В итоге трудоемкость составляет O(n * log n)
-// Ресурсоемкость O(n * log n)
+// В итоге трудоемкость составляет O(n)
+// Ресурсоемкость O(n)
 
 /**
  * Сортировка последовательности
