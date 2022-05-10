@@ -2,6 +2,8 @@
 
 package lesson6
 
+import lesson6.impl.GraphBuilder
+
 /**
  * Эйлеров цикл.
  * Средняя
@@ -60,8 +62,65 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
  * |
  * J ------------ K
  */
+
+/**
+ * Для построения минимального остовного дерева с v вершинами
+ * необходимо и достаточно v - 1 ребер. В противном случае в графе имеются циклы
+ * Если удалить ребро в цикле, то граф останется связным
+ */
 fun Graph.minimumSpanningTree(): Graph {
-    TODO()
+    if (this.vertices.size < 2) return this
+    // Требуется создать копию существующего графа, из которой будут удаляться ребра без ущерба для исходного
+    var graph = buildGraph(vertices, edges)
+    while (graph.edges.size > graph.vertices.size - 1) {
+        // В качестве результата поиска достаточно найти всего ребро, включенное в цикл
+        val e = findCycle(graph)
+        graph = buildGraph(vertices, graph.edges.minus(e))
+    }
+    return graph
+}
+
+private fun buildGraph(vertices: Set<Graph.Vertex>, edges: Set<Graph.Edge>) =
+    GraphBuilder().apply {
+        for (v in vertices)
+            addVertex(v.name)
+        for (e in edges) {
+            addConnection(e.begin, e.end)
+        }
+    }.build()
+
+// В качестве решения используется поиск вглубину до первого обратного ребра
+// Обратное ребро - ребро, содиняющее текущую вершину с одной из посещенных ранее
+// Заметим, что наличие такого ребра гарантированно при поиске из любой вершины
+private fun findCycle(graph: Graph): Graph.Edge {
+    val visited = mutableSetOf<Graph.Vertex>()
+    val start = graph.vertices.iterator().next()
+    visited.add(start)
+    return dfs(graph, visited, start, start)!!
+}
+
+private fun dfs(
+    graph: Graph,
+    visited: MutableSet<Graph.Vertex>,
+    actual: Graph.Vertex,
+    previous: Graph.Vertex
+): Graph.Edge? {
+    val neighbors = graph.getNeighbors(actual)
+    // Чтобы не идти глубже, чем надо, на каждом шаге проверяем, нет ли соседей в visited
+    if (actual != previous) {
+        for (v in neighbors) {
+            if (v != previous && v in visited)
+                return graph.getConnection(actual, previous)
+        }
+    }
+    for (v in neighbors) {
+        if (v != previous) {
+            visited.add(v)
+            val result = dfs(graph, visited, v, actual)
+            if (result != null) return result
+        }
+    }
+    return null
 }
 
 /**
@@ -112,8 +171,36 @@ fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
  *
  * Ответ: A, E, J, K, D, C, H, G, B, F, I
  */
+
+/**
+ * В общем случае задача решается только полным перебором,
+ * следовательно трудоекость составляет O(V * (V + E))
+ * Для решения этой задачи используется поиск в глубину
+ */
+
 fun Graph.longestSimplePath(): Path {
-    TODO()
+    var longestPath = Path()
+    for (vertex in this.vertices) { // O(V)
+        val path = recursiveSearchLongest(this, vertex)
+        if (path.length > longestPath.length) longestPath = path
+    }
+    return longestPath
+}
+
+private fun recursiveSearchLongest(graph: Graph, vertex: Graph.Vertex): Path {
+    return recursiveSearchLongest(graph, vertex, Path(vertex))
+}
+
+private fun recursiveSearchLongest(graph: Graph, vertex: Graph.Vertex, actualPath: Path): Path {
+    var longestPath = actualPath
+    val visited = actualPath.vertices.toSet()
+    for (v in graph.getNeighbors(vertex)) {
+        if (v !in visited) {
+            val path = recursiveSearchLongest(graph, v, Path(actualPath, graph, v))
+            if (path.length > longestPath.length) longestPath = path
+        }
+    }
+    return longestPath
 }
 
 /**
