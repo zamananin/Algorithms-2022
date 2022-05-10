@@ -2,6 +2,8 @@
 
 package lesson7
 
+import java.lang.Integer.max
+
 /**
  * Наибольшая общая подпоследовательность.
  * Средняя
@@ -31,7 +33,36 @@ fun longestCommonSubSequence(first: String, second: String): String {
  * В примере ответами являются 2, 8, 9, 12 или 2, 5, 9, 12 -- выбираем первую из них.
  */
 fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
-    TODO()
+    if (list.size < 2) return list
+    // найдем максимальные подпоследовательности, заканчивающиеся i-тыми элементами (всего n)
+    val subSequences = mutableListOf<List<Int>>() // Ресурсоемкость O(n^2)
+    for (element in list) { // O(n)
+        subSequences.add(findLongest(subSequences, element)) // O(n)
+    }
+    return subSequences.getLongest() // O(n)
+}
+// Итоговая трудоемкость O(n^2) + O(n) = O(n^2)
+
+private fun findLongest(subSequence: List<List<Int>>, value: Int): List<Int> {
+    val result = mutableListOf(value)
+    for (el in subSequence) { // O(n)
+        if (el.size >= result.size && value > el.last()) {
+            result.clear()
+            result.addAll(el + value)
+        }
+    }
+    return result
+}
+
+private fun List<List<Int>>.getLongest(): List<Int> {
+    val result = mutableListOf<Int>()
+    for (el in this) { // O(n)
+        if (el.size > result.size) {
+            result.clear()
+            result.addAll(el)
+        }
+    }
+    return result
 }
 
 /**

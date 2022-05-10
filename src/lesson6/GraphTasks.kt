@@ -72,6 +72,8 @@ fun Graph.minimumSpanningTree(): Graph {
     if (this.vertices.size < 2) return this
     // Требуется создать копию существующего графа, из которой будут удаляться ребра без ущерба для исходного
     var graph = buildGraph(vertices, edges)
+    // O(E - V) в общем случае можно заменить на O(E), т.к. разница имеет вес
+    // только в особых случаях: когда E близко к V
     while (graph.edges.size > graph.vertices.size - 1) {
         // В качестве результата поиска достаточно найти всего ребро, включенное в цикл
         val e = findCycle(graph)
@@ -92,6 +94,10 @@ private fun buildGraph(vertices: Set<Graph.Vertex>, edges: Set<Graph.Edge>) =
 // В качестве решения используется поиск вглубину до первого обратного ребра
 // Обратное ребро - ребро, содиняющее текущую вершину с одной из посещенных ранее
 // Заметим, что наличие такого ребра гарантированно при поиске из любой вершины
+// Трудоемкость в худшем случае составляет O(V + E), но фактически полный перебор будет
+// лишь в некоторых случаях. В действительности обратное ребро будет гарантировано найдено
+// после обхода V - 1 ребер, следовательно трудоемкость можно принять за O(V)
+// помноженную на трудоемкость обхода одного ребра
 private fun findCycle(graph: Graph): Graph.Edge {
     val visited = mutableSetOf<Graph.Vertex>()
     val start = graph.vertices.iterator().next()
@@ -107,6 +113,7 @@ private fun dfs(
 ): Graph.Edge? {
     val neighbors = graph.getNeighbors(actual)
     // Чтобы не идти глубже, чем надо, на каждом шаге проверяем, нет ли соседей в visited
+    // Трудоемкость этой операции составляет O(E/V) - среднее число соседей.
     if (actual != previous) {
         for (v in neighbors) {
             if (v != previous && v in visited)
@@ -122,6 +129,7 @@ private fun dfs(
     }
     return null
 }
+// В итоге трудоемкость составляет O(E(V * E/V)) = O(E^2)
 
 /**
  * Максимальное независимое множество вершин в графе без циклов.
